@@ -1,0 +1,41 @@
+# Next.js build output
+.next
+.next-*
+.next_*
+
+# Dependencies
+node_modules
+crm/node_modules
+
+# Logs and local env
+*.log
+.env
+.env.*
+!.env.example
+crm/.env
+crm/.env.*
+mileagetracker/.env
+mileagetracker/.env.*
+
+# Local databases
+prisma/dev.db
+prisma/dev.db-journal
+prisma/e2e.db
+prisma/e2e.db-journal
+
+# Test output
+playwright-report
+test-results
+crm/test-results
+
+# Uploads and generated workspace clutter
+public/uploads/*
+!public/uploads/.gitkeep
+.scf_deploy_work
+crm/.next
+
+# Personal/scratch files unrelated to the app
+Files/
+
+# Machine-local Claude Code config
+.claude/

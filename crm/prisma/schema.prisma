@@ -1,0 +1,758 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  INVITED
+  DISABLED
+}
+
+enum ContactStatus {
+  ACTIVE
+  INACTIVE
+  LEAD
+}
+
+enum CompanyStatus {
+  ACTIVE
+  INACTIVE
+  OVERDUE
+  ARCHIVED
+}
+
+enum AddressType {
+  BILLING
+  SERVICE
+  PRIMARY
+  OTHER
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PARTIAL
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  DECLINED
+  CONVERTED
+  EXPIRED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
+  EXPIRED
+}
+
+enum BillingFrequency {
+  MONTHLY
+  QUARTERLY
+  ANNUALLY
+  CUSTOM
+}
+
+enum ReminderKind {
+  INVOICE_PRE_DUE
+  INVOICE_DUE_TODAY
+  INVOICE_OVERDUE
+  SUBSCRIPTION_RENEWAL
+  FAILED_PAYMENT
+  INTERNAL_ALERT
+}
+
+enum ReminderJobStatus {
+  PENDING
+  SENT
+  SKIPPED
+  FAILED
+}
+
+enum PortalAccessType {
+  INVOICE
+  QUOTE
+}
+
+enum WebhookEventStatus {
+  RECEIVED
+  PROCESSED
+  DUPLICATE
+  FAILED
+  IGNORED
+}
+
+enum CommunicationType {
+  EMAIL
+  NOTE
+  CALL
+  COMMENT
+  DOCUMENT
+  SYSTEM
+}
+
+enum TaskStatus {
+  OPEN
+  IN_PROGRESS
+  BLOCKED
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum NotificationStatus {
+  UNREAD
+  READ
+}
+
+enum DocumentScope {
+  COMPANY
+  CONTACT
+  INVOICE
+  SUBSCRIPTION
+  GENERAL
+}
+
+enum SubscriptionEventType {
+  CREATED
+  RENEWAL_DUE
+  INVOICE_GENERATED
+  PAUSED
+  CANCELLED
+  RESUMED
+  PRICE_CHANGED
+}
+
+model User {
+  id                 String               @id @default(cuid())
+  firstName          String
+  lastName           String
+  email              String               @unique
+  passwordHash       String
+  status             UserStatus           @default(ACTIVE)
+  jobTitle           String?
+  avatarUrl          String?
+  lastLoginAt        DateTime?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  userRoles          UserRole[]
+  sessions           Session[]
+  passwordResetTokens PasswordResetToken[]
+  createdTasks       Task[]               @relation("TaskCreatedBy")
+  assignedTasks      Task[]               @relation("TaskAssignedTo")
+  taskComments       TaskComment[]
+  notes              Note[]
+  documents          Document[]
+  paymentsRecorded   Payment[]            @relation("PaymentRecordedBy")
+  ownedBusinessSubscriptions BusinessSubscription[] @relation("BusinessSubscriptionOwner")
+  recordedBusinessSubscriptionPayments BusinessSubscriptionPayment[] @relation("BusinessSubscriptionPaymentRecordedBy")
+  subscriptionEvents SubscriptionEvent[]
+  notifications      Notification[]
+  auditLogs          AuditLog[]
+}
+
+model Role {
+  id          String           @id @default(cuid())
+  key         String           @unique
+  name        String
+  description String?
+  isSystem    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  userRoles   UserRole[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id          String           @id @default(cuid())
+  key         String           @unique
+  name        String
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  roles       RolePermission[]
+}
+
+model UserRole {
+  id        String   @id @default(cuid())
+  userId    String
+  roleId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+}
+
+model Session {
+  id          String   @id @default(cuid())
+  userId      String
+  tokenHash   String   @unique
+  userAgent   String?
+  ipAddress   String?
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  lastSeenAt  DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PasswordResetToken {
+  id         String   @id @default(cuid())
+  userId     String
+  tokenHash  String   @unique
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Company {
+  id                 String                @id @default(cuid())
+  name               String
+  legalName          String?
+  status             CompanyStatus         @default(ACTIVE)
+  accountCode        String?               @unique
+  website            String?
+  taxNumber          String?
+  registrationNumber String?
+  billingEmail       String?
+  billingPhone       String?
+  billingPreference  String?
+  currency           String                @default("GBP")
+  tags               String[]              @default([])
+  flags              String[]              @default([])
+  notesSummary       String?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  contacts           Contact[]
+  addresses          Address[]
+  quotes             Quote[]
+  invoices           Invoice[]
+  subscriptions      Subscription[]
+  tasks              Task[]
+  notes              Note[]
+  documents          Document[]
+  communicationLogs  CommunicationLog[]
+  emailLogs          EmailLog[]
+  reminderJobs       ReminderJob[]
+  portalAccessTokens PortalAccessToken[]
+}
+
+model Contact {
+  id                String               @id @default(cuid())
+  companyId         String?
+  firstName         String
+  lastName          String
+  email             String
+  alternateEmail    String?
+  phone             String?
+  mobile            String?
+  title             String?
+  department        String?
+  status            ContactStatus        @default(ACTIVE)
+  isPrimary         Boolean              @default(false)
+  billingPreference String?
+  tags              String[]             @default([])
+  flags             String[]             @default([])
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  company           Company?             @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  addresses         Address[]
+  quotes            Quote[]
+  invoices          Invoice[]
+  subscriptions     Subscription[]
+  tasks             Task[]
+  notes             Note[]
+  documents         Document[]
+  communicationLogs CommunicationLog[]
+  emailLogs         EmailLog[]
+  reminderJobs      ReminderJob[]
+  portalAccessTokens PortalAccessToken[]
+}
+
+model Address {
+  id         String      @id @default(cuid())
+  companyId  String?
+  contactId  String?
+  type       AddressType @default(PRIMARY)
+  label      String?
+  line1      String
+  line2      String?
+  city       String
+  county     String?
+  postalCode String
+  country    String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  company    Company?    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contact    Contact?    @relation(fields: [contactId], references: [id], onDelete: Cascade)
+}
+
+model Invoice {
+  id                String             @id @default(cuid())
+  companyId         String
+  contactId         String?
+  subscriptionId    String?
+  sourceQuoteId     String?            @unique
+  number            String             @unique
+  status            InvoiceStatus      @default(DRAFT)
+  currency          String             @default("GBP")
+  issueDate         DateTime
+  dueDate           DateTime
+  sentAt            DateTime?
+  paidAt            DateTime?
+  cancelledAt       DateTime?
+  subtotalAmount    Decimal            @db.Decimal(12, 2)
+  taxAmount         Decimal            @db.Decimal(12, 2)
+  discountAmount    Decimal            @db.Decimal(12, 2)
+  totalAmount       Decimal            @db.Decimal(12, 2)
+  balanceDue        Decimal            @db.Decimal(12, 2)
+  paymentReference  String?
+  notes             String?
+  terms             String?
+  pdfPath           String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  company           Company            @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  contact           Contact?           @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  subscription      Subscription?      @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  sourceQuote       Quote?             @relation(fields: [sourceQuoteId], references: [id], onDelete: SetNull)
+  items             InvoiceItem[]
+  payments          Payment[]
+  webhookEvents     WebhookEvent[]
+  notesFeed         Note[]
+  documents         Document[]
+  communicationLogs CommunicationLog[]
+  emailLogs         EmailLog[]
+  reminderJobs      ReminderJob[]
+  tasks             Task[]
+  portalAccessTokens PortalAccessToken[]
+}
+
+model Quote {
+  id                String             @id @default(cuid())
+  companyId         String
+  contactId         String?
+  number            String             @unique
+  status            QuoteStatus        @default(DRAFT)
+  currency          String             @default("GBP")
+  issueDate         DateTime
+  expiryDate        DateTime
+  sentAt            DateTime?
+  acceptedAt        DateTime?
+  declinedAt        DateTime?
+  convertedAt       DateTime?
+  subtotalAmount    Decimal            @db.Decimal(12, 2)
+  taxAmount         Decimal            @db.Decimal(12, 2)
+  discountAmount    Decimal            @db.Decimal(12, 2)
+  totalAmount       Decimal            @db.Decimal(12, 2)
+  notes             String?
+  terms             String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  company           Company            @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  contact           Contact?           @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  convertedInvoice  Invoice?
+  items             QuoteItem[]
+  webhookEvents     WebhookEvent[]
+  portalAccessTokens PortalAccessToken[]
+}
+
+model QuoteItem {
+  id              String   @id @default(cuid())
+  quoteId         String
+  description     String
+  quantity        Decimal  @db.Decimal(12, 2)
+  unitPrice       Decimal  @db.Decimal(12, 2)
+  taxRate         Decimal  @db.Decimal(5, 2)
+  discountAmount  Decimal  @db.Decimal(12, 2)
+  lineTotal       Decimal  @db.Decimal(12, 2)
+  sortOrder       Int      @default(0)
+  quote           Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+}
+
+model InvoiceItem {
+  id              String   @id @default(cuid())
+  invoiceId       String
+  description     String
+  quantity        Decimal  @db.Decimal(12, 2)
+  unitPrice       Decimal  @db.Decimal(12, 2)
+  taxRate         Decimal  @db.Decimal(5, 2)
+  discountAmount  Decimal  @db.Decimal(12, 2)
+  lineTotal       Decimal  @db.Decimal(12, 2)
+  sortOrder       Int      @default(0)
+  invoice         Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id                 String         @id @default(cuid())
+  invoiceId          String
+  recordedByUserId   String?
+  status             PaymentStatus  @default(COMPLETED)
+  paidAt             DateTime
+  amount             Decimal        @db.Decimal(12, 2)
+  method             String
+  reference          String?
+  reconciliationNote String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  invoice            Invoice        @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  recordedBy         User?          @relation("PaymentRecordedBy", fields: [recordedByUserId], references: [id], onDelete: SetNull)
+  webhookEvents      WebhookEvent[]
+}
+
+model Subscription {
+  id                  String                @id @default(cuid())
+  companyId           String
+  contactId           String?
+  serviceName         String
+  description         String?
+  status              SubscriptionStatus    @default(ACTIVE)
+  frequency           BillingFrequency
+  intervalCount       Int                   @default(1)
+  amount              Decimal               @db.Decimal(12, 2)
+  taxRate             Decimal               @db.Decimal(5, 2)
+  startDate           DateTime
+  nextBillingDate     DateTime
+  reminderOffsets     Int[]                 @default([14, 7, 0, -3, -7, -14])
+  autoGenerateInvoice Boolean               @default(true)
+  autoSendReminders   Boolean               @default(true)
+  lastInvoicedAt      DateTime?
+  cancelledAt         DateTime?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  company             Company               @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  contact             Contact?              @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  invoices            Invoice[]
+  events              SubscriptionEvent[]
+  notes               Note[]
+  documents           Document[]
+  reminderJobs        ReminderJob[]
+  emailLogs           EmailLog[]
+  tasks               Task[]
+  communicationLogs   CommunicationLog[]
+}
+
+model SubscriptionEvent {
+  id              String                @id @default(cuid())
+  subscriptionId  String
+  createdByUserId String?
+  type            SubscriptionEventType
+  summary         String
+  metadata        Json?
+  occurredAt      DateTime              @default(now())
+  subscription    Subscription          @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  createdBy       User?                 @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+}
+
+model ReminderRule {
+  id          String         @id @default(cuid())
+  kind        ReminderKind
+  daysOffset  Int
+  isActive    Boolean        @default(true)
+  templateKey String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model ReminderJob {
+  id             String             @id @default(cuid())
+  idempotencyKey String             @unique
+  kind           ReminderKind
+  status         ReminderJobStatus  @default(PENDING)
+  scheduledFor   DateTime
+  processedAt    DateTime?
+  errorMessage   String?
+  companyId      String?
+  contactId      String?
+  invoiceId      String?
+  subscriptionId String?
+  emailTemplateId String?
+  payload        Json?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  company        Company?           @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  contact        Contact?           @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  invoice        Invoice?           @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  subscription   Subscription?      @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  emailTemplate  EmailTemplate?     @relation(fields: [emailTemplateId], references: [id], onDelete: SetNull)
+  emailLogs      EmailLog[]
+}
+
+model EmailTemplate {
+  id          String       @id @default(cuid())
+  key         String       @unique
+  name        String
+  subject     String
+  bodyHtml    String
+  bodyText    String
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  reminderJobs ReminderJob[]
+}
+
+model EmailLog {
+  id             String    @id @default(cuid())
+  companyId      String?
+  contactId      String?
+  invoiceId      String?
+  subscriptionId String?
+  reminderJobId  String?
+  templateKey    String?
+  provider       String
+  providerId     String?
+  toAddress      String
+  subject        String
+  htmlBody       String
+  textBody       String?
+  status         String
+  errorMessage   String?
+  createdAt      DateTime  @default(now())
+  company        Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  contact        Contact?  @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  invoice        Invoice?  @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  reminderJob    ReminderJob? @relation(fields: [reminderJobId], references: [id], onDelete: SetNull)
+}
+
+model PortalAccessToken {
+  id         String           @id @default(cuid())
+  tokenHash  String           @unique
+  type       PortalAccessType
+  companyId  String?
+  contactId  String?
+  invoiceId  String?
+  quoteId    String?
+  expiresAt  DateTime
+  lastUsedAt DateTime?
+  createdAt  DateTime         @default(now())
+  company    Company?         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contact    Contact?         @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  invoice    Invoice?         @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  quote      Quote?           @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+}
+
+model WebhookEvent {
+  id              String             @id @default(cuid())
+  provider        String
+  providerEventId String
+  eventType       String
+  status          WebhookEventStatus @default(RECEIVED)
+  invoiceId       String?
+  paymentId       String?
+  quoteId         String?
+  payload         Json?
+  processedAt     DateTime?
+  errorMessage    String?
+  createdAt       DateTime           @default(now())
+  invoice         Invoice?           @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  payment         Payment?           @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  quote           Quote?             @relation(fields: [quoteId], references: [id], onDelete: SetNull)
+
+  @@unique([provider, providerEventId])
+}
+
+model Task {
+  id               String       @id @default(cuid())
+  title            String
+  description      String?
+  status           TaskStatus   @default(OPEN)
+  priority         TaskPriority @default(MEDIUM)
+  dueAt            DateTime?
+  assignedToUserId String?
+  createdByUserId  String?
+  companyId        String?
+  contactId        String?
+  invoiceId        String?
+  subscriptionId   String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  assignedTo       User?        @relation("TaskAssignedTo", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  createdBy        User?        @relation("TaskCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  company          Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  contact          Contact?     @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  invoice          Invoice?     @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  subscription     Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  comments         TaskComment[]
+}
+
+model TaskComment {
+  id         String   @id @default(cuid())
+  taskId     String
+  authorId   String
+  body       String
+  createdAt  DateTime @default(now())
+  task       Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  author     User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model Note {
+  id             String       @id @default(cuid())
+  authorId       String
+  companyId      String?
+  contactId      String?
+  invoiceId      String?
+  subscriptionId String?
+  body           String
+  createdAt      DateTime     @default(now())
+  author         User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  company        Company?     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contact        Contact?     @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  invoice        Invoice?     @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+}
+
+model Document {
+  id             String        @id @default(cuid())
+  uploadedByUserId String?
+  companyId      String?
+  contactId      String?
+  invoiceId      String?
+  subscriptionId String?
+  scope          DocumentScope
+  fileName       String
+  storagePath    String
+  mimeType       String
+  sizeBytes      Int
+  createdAt      DateTime      @default(now())
+  uploadedBy     User?         @relation(fields: [uploadedByUserId], references: [id], onDelete: SetNull)
+  company        Company?      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contact        Contact?      @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  invoice        Invoice?      @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+}
+
+model CommunicationLog {
+  id             String             @id @default(cuid())
+  companyId      String?
+  contactId      String?
+  invoiceId      String?
+  subscriptionId String?
+  type           CommunicationType
+  title          String
+  body           String?
+  createdAt      DateTime           @default(now())
+  company        Company?           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contact        Contact?           @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  invoice        Invoice?           @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  subscription   Subscription?      @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+}
+
+model BusinessSubscription {
+  id              String             @id @default(cuid())
+  vendorName      String
+  serviceName     String
+  category        String?
+  supportEmail    String?
+  accountNumber   String?
+  renewalOwnerUserId String?
+  status          SubscriptionStatus @default(ACTIVE)
+  frequency       BillingFrequency
+  intervalCount   Int                @default(1)
+  amount          Decimal            @db.Decimal(12, 2)
+  currency        String             @default("GBP")
+  nextPaymentDate DateTime
+  renewalDate     DateTime?
+  autoNotify      Boolean            @default(true)
+  reminderDaysBefore Int[]           @default([14, 7, 3])
+  paymentMethod   String?
+  reference       String?
+  website         String?
+  notes           String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  renewalOwner    User?              @relation("BusinessSubscriptionOwner", fields: [renewalOwnerUserId], references: [id], onDelete: SetNull)
+  payments        BusinessSubscriptionPayment[]
+
+  @@index([status, nextPaymentDate])
+  @@index([nextPaymentDate])
+}
+
+model BusinessSubscriptionPayment {
+  id                     String               @id @default(cuid())
+  businessSubscriptionId String
+  recordedByUserId       String?
+  status                 PaymentStatus        @default(COMPLETED)
+  paidAt                 DateTime
+  amount                 Decimal              @db.Decimal(12, 2)
+  currency               String               @default("GBP")
+  method                 String?
+  reference              String?
+  note                   String?
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+  businessSubscription   BusinessSubscription @relation(fields: [businessSubscriptionId], references: [id], onDelete: Cascade)
+  recordedBy             User?                @relation("BusinessSubscriptionPaymentRecordedBy", fields: [recordedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([businessSubscriptionId, paidAt])
+}
+
+model Notification {
+  id         String             @id @default(cuid())
+  userId     String
+  title      String
+  body       String
+  actionUrl  String?
+  status     NotificationStatus @default(UNREAD)
+  createdAt  DateTime           @default(now())
+  readAt     DateTime?
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorUserId String?
+  action     String
+  entityType String
+  entityId   String
+  summary    String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  actor      User?    @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+}
+
+model Setting {
+  id         String   @id @default(cuid())
+  category   String
+  key        String
+  value      Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([category, key])
+}

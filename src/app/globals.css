@@ -1,0 +1,290 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 38 48% 96%;
+    --foreground: 216 24% 13%;
+    --card: 0 0% 100%;
+    --card-foreground: 216 24% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 216 24% 13%;
+    --primary: 338 92% 63%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 43 92% 82%;
+    --secondary-foreground: 216 24% 13%;
+    --muted: 38 20% 91%;
+    --muted-foreground: 217 14% 40%;
+    --accent: 190 88% 86%;
+    --accent-foreground: 216 24% 13%;
+    --border: 35 18% 82%;
+    --input: 35 18% 82%;
+    --ring: 338 92% 63%;
+    --success: 158 45% 35%;
+    --success-foreground: 158 78% 96%;
+    --warning: 35 85% 48%;
+    --warning-foreground: 30 100% 10%;
+    --danger: 2 72% 54%;
+    --danger-foreground: 0 100% 97%;
+  }
+
+  .dark {
+    --background: 204 24% 9%;
+    --foreground: 42 22% 94%;
+    --card: 205 22% 13%;
+    --card-foreground: 42 22% 94%;
+    --popover: 205 22% 13%;
+    --popover-foreground: 42 22% 94%;
+    --primary: 177 52% 53%;
+    --primary-foreground: 204 24% 9%;
+    --secondary: 204 14% 18%;
+    --secondary-foreground: 42 22% 94%;
+    --muted: 204 14% 18%;
+    --muted-foreground: 40 9% 69%;
+    --accent: 182 25% 19%;
+    --accent-foreground: 172 66% 87%;
+    --border: 204 12% 22%;
+    --input: 204 12% 22%;
+    --ring: 177 52% 53%;
+    --success: 154 54% 52%;
+    --success-foreground: 165 86% 7%;
+    --warning: 35 90% 58%;
+    --warning-foreground: 28 100% 8%;
+    --danger: 0 84% 64%;
+    --danger-foreground: 0 100% 97%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    background-image:
+      radial-gradient(circle at 12% 10%, rgba(255, 143, 184, 0.34), transparent 22%),
+      radial-gradient(circle at 88% 12%, rgba(121, 216, 255, 0.34), transparent 24%),
+      radial-gradient(circle at 22% 88%, rgba(255, 209, 102, 0.28), transparent 20%),
+      radial-gradient(circle at 82% 82%, rgba(183, 151, 255, 0.24), transparent 20%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 247, 234, 0.96));
+    background-attachment: fixed;
+    font-feature-settings: "ss01" on, "cv03" on;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.24;
+    background-image:
+      linear-gradient(rgba(17, 24, 39, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(17, 24, 39, 0.04) 1px, transparent 1px);
+    background-size: 36px 36px;
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.58), transparent 78%);
+  }
+
+  a {
+    @apply transition-colors;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.18);
+  }
+
+  .public-site {
+    --background: 240 10% 4%;
+    --foreground: 24 22% 93%;
+    --card: 220 17% 9%;
+    --card-foreground: 24 22% 93%;
+    --popover: 220 17% 9%;
+    --popover-foreground: 24 22% 93%;
+    --primary: 211 26% 66%;
+    --primary-foreground: 240 10% 4%;
+    --secondary: 220 14% 12%;
+    --secondary-foreground: 24 22% 93%;
+    --muted: 220 14% 10%;
+    --muted-foreground: 24 10% 69%;
+    --accent: 260 18% 55%;
+    --accent-foreground: 24 22% 93%;
+    --border: 211 26% 66%;
+    --input: 220 14% 14%;
+    --ring: 211 26% 66%;
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
+    background: linear-gradient(180deg, #0c0e1c 0%, #080a14 50%, #05060e 100%);
+  }
+
+  .public-site::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    pointer-events: none;
+    opacity: 0.5;
+    background:
+      linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.008) 22%, rgba(255, 255, 255, 0));
+    background-size: 64px 64px, 64px 64px, 100% 100%;
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0.28) 54%, transparent 100%);
+  }
+
+  .public-site::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(56rem 22rem at 50% 0%, rgba(236, 72, 153, 0.10), transparent 60%),
+      radial-gradient(44rem 24rem at 50% 118%, rgba(0, 0, 0, 0.5), transparent 62%),
+      linear-gradient(90deg, rgba(143, 168, 193, 0.03), transparent 18%, transparent 82%, rgba(143, 168, 193, 0.03));
+  }
+
+  .public-site-backdrop {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(72rem 36rem at 50% -8%, rgba(241, 236, 232, 0.12), transparent 52%),
+      linear-gradient(180deg, #151b25 0%, #0d1219 42%, #090c12 100%);
+  }
+
+  .public-site-glow {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(100px);
+    opacity: 0.9;
+  }
+
+  .public-site-glow-left {
+    top: -2rem;
+    left: -12rem;
+    height: 44rem;
+    width: 48rem;
+    background: radial-gradient(circle, rgba(236, 72, 153, 0.38) 0%, rgba(236, 72, 153, 0.16) 38%, transparent 72%);
+  }
+
+  .public-site-glow-right {
+    top: -2rem;
+    right: -12rem;
+    height: 42rem;
+    width: 46rem;
+    background: radial-gradient(circle, rgba(143, 168, 193, 0.14) 0%, rgba(143, 168, 193, 0.06) 40%, transparent 72%);
+  }
+
+  .public-site-glow-bottom {
+    bottom: -14rem;
+    left: 50%;
+    height: 36rem;
+    width: 64rem;
+    transform: translateX(-50%);
+    background: radial-gradient(circle, rgba(143, 168, 193, 0.10) 0%, rgba(143, 168, 193, 0.04) 42%, transparent 74%);
+  }
+
+  .public-site-beam {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(115deg, transparent 0%, rgba(236, 72, 153, 0.06) 30%, rgba(236, 72, 153, 0.03) 48%, transparent 65%),
+      linear-gradient(90deg, rgba(143, 168, 193, 0.03), transparent 20%, transparent 80%, rgba(143, 168, 193, 0.03));
+    opacity: 1;
+  }
+
+  .public-site-noise {
+    position: absolute;
+    inset: 0;
+    opacity: 0.16;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 72px 72px;
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.4) 58%, transparent 100%);
+  }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-[2rem] border bg-card/85 shadow-panel backdrop-blur-xl;
+    box-shadow:
+      0 24px 65px rgba(19, 25, 40, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.62);
+  }
+
+  .shell {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .eyebrow {
+    @apply inline-flex w-fit items-center rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em];
+    background: hsl(var(--card) / 0.72);
+  }
+
+  .section-title {
+    @apply text-3xl font-semibold tracking-[-0.05em] lg:text-5xl;
+  }
+
+  .section-copy {
+    @apply max-w-2xl text-sm leading-7 text-muted-foreground lg:text-base;
+  }
+
+  .studio-card {
+    @apply rounded-[2rem] border border-foreground/10 bg-white/72 shadow-[0_26px_80px_rgba(27,31,40,0.08)] backdrop-blur-xl;
+  }
+
+  .section-kicker {
+    @apply text-[11px] font-semibold uppercase tracking-[0.34em] text-primary;
+  }
+
+  .feature-pill {
+    @apply rounded-full border border-foreground/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground;
+    background: rgba(255, 255, 255, 0.72);
+  }
+
+  .soft-grid {
+    background-image:
+      linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .public-site .panel {
+    @apply shadow-none backdrop-blur-xl;
+    border-color: rgba(236, 72, 153, 0.14);
+    background: linear-gradient(180deg, rgba(14, 16, 28, 0.88), rgba(10, 11, 20, 0.76));
+    box-shadow:
+      0 24px 80px rgba(0, 0, 0, 0.44),
+      0 0 0 1px rgba(236, 72, 153, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .public-site .section-kicker {
+    color: #f472b6;
+  }
+
+  .public-site .section-title {
+    @apply text-balance text-foreground;
+  }
+
+  .public-site .section-copy {
+    @apply text-muted-foreground;
+  }
+
+  .public-site .eyebrow {
+    border-color: rgba(143, 168, 193, 0.12);
+    background: rgba(17, 19, 24, 0.72);
+    color: #f1ece8;
+  }
+
+  .public-site .feature-pill {
+    border-color: rgba(143, 168, 193, 0.12);
+    background: rgba(17, 19, 24, 0.72);
+    color: #b9b0ad;
+  }
+}

@@ -1,0 +1,8 @@
+.next
+node_modules
+.env
+.env.local
+.env.production
+tsconfig.tsbuildinfo
+public/uploads/documents
+public/uploads/invoices

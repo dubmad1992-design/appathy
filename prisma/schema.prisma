@@ -1,0 +1,194 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+enum UserStatus {
+  active
+  disabled
+}
+
+enum PublishStatus {
+  draft
+  published
+  archived
+  active
+}
+
+enum AppStatus {
+  LIVE
+  IN_DEVELOPMENT
+  PAUSED
+  ARCHIVED
+}
+
+enum EnquiryStatus {
+  NEW
+  READ
+  REPLIED
+  CLOSED
+}
+
+model User {
+  id           String     @id @default(cuid())
+  name         String
+  email        String     @unique
+  passwordHash String
+  role         Role       @default(VIEWER)
+  status       UserStatus @default(active)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model App {
+  id               String    @id @default(cuid())
+  name             String
+  slug             String    @unique
+  category         String
+  shortDescription String
+  longDescription  String
+  status           AppStatus @default(IN_DEVELOPMENT)
+  versionNotes     String?
+  internalNotes    String?
+  logoUrl          String?
+  screenshotUrls   Json
+  liveUrl          String?
+  stagingUrl       String?
+  adminUrl         String?
+  repositoryUrl    String?
+  featured         Boolean   @default(false)
+  isPublic         Boolean   @default(true)
+  processName      String?
+  deployPath       String?
+  runtime          String?
+  port             Int?
+  healthUrl        String?
+  sortOrder        Int       @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model Service {
+  id               String        @id @default(cuid())
+  title            String
+  slug             String        @unique
+  strapline        String        @default("")
+  shortDescription String
+  description      String        @default("")
+  whoFor           String        @default("")
+  bullets          Json          @default("[]")
+  evidence         Json          @default("[]")
+  startingPrice    String?
+  ctaLabel         String        @default("Start a project")
+  isVisible        Boolean       @default(true)
+  sortOrder        Int           @default(0)
+  status           PublishStatus @default(active)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+}
+
+model Testimonial {
+  id         String        @id @default(cuid())
+  quote      String
+  authorName String
+  role       String
+  company    String
+  isVisible  Boolean       @default(true)
+  status     PublishStatus @default(published)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+}
+
+model FAQ {
+  id         String        @id @default(cuid())
+  question   String
+  answer     String
+  isVisible  Boolean       @default(true)
+  sortOrder  Int           @default(0)
+  status     PublishStatus @default(published)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+}
+
+model ContactSubmission {
+  id            String         @id @default(cuid())
+  name          String
+  email         String
+  company       String?
+  message       String
+  interestType  String
+  internalNotes String?
+  status        EnquiryStatus  @default(NEW)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model SiteSettings {
+  id                 String        @id @default(cuid())
+  siteName           String        @default("Appathy")
+  siteTagline        String        @default("Websites, forms, and systems for UK businesses.")
+  logoUrl            String?
+  contactEmail       String        @default("hello@appathy.dev")
+  contactPhone       String?
+  analyticsSnippet   String?
+  seoTitleDefault    String        @default("Appathy | Websites, forms, and systems for UK businesses")
+  seoDescription     String        @default("Appathy designs and builds websites, digital forms, and small internal tools for local UK businesses.")
+  socialLinkedIn     String?
+  socialX            String?
+  socialGithub       String?
+  footerBlurb        String        @default("Appathy builds and looks after websites, forms, and systems for local businesses.")
+  status             PublishStatus @default(active)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+}
+
+model HomepageContent {
+  id                 String        @id @default(cuid())
+  heroEyebrow        String        @default("Independent software studio")
+  heroTitle          String        @default("Clean digital products for teams that need clarity, speed, and follow-through.")
+  heroDescription    String        @default("Appathy designs and manages apps, websites, and internal platforms that feel simple on the surface and dependable underneath.")
+  primaryCtaLabel    String        @default("Start a project")
+  secondaryCtaLabel  String        @default("See apps")
+  introTitle         String        @default("What Appathy does")
+  introBody          String        @default("I build and support software products with a sharp focus on usability, maintainability, and quiet confidence.")
+  aboutTitle         String        @default("A focused product partner")
+  aboutBody          String        @default("Appathy works with founders, operators, and growing teams who need a hands-on engineer to shape software that is useful from day one.")
+  contactTitle       String        @default("Tell me what you're building")
+  contactBody        String        @default("Share the problem, product, or improvement you're thinking about. I'll reply with the clearest next step.")
+  status             PublishStatus @default(published)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+}
+
+model MediaAsset {
+  id         String        @id @default(cuid())
+  fileName   String
+  altText    String?
+  url        String
+  mimeType   String
+  size       Int
+  status     PublishStatus @default(active)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+}
+
+model AnnouncementUpdate {
+  id         String        @id @default(cuid())
+  title      String
+  body       String
+  isVisible  Boolean       @default(true)
+  status     PublishStatus @default(published)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+}
