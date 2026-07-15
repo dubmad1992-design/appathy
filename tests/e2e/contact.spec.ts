@@ -14,3 +14,20 @@ test("contact submission works from the public site", async ({ page }) => {
   await expect(page.getByTestId("contact-name")).toHaveValue("");
   await expect(page.getByTestId("contact-email")).toHaveValue("");
 });
+
+test("honeypot submissions are silently dropped", async ({ request }) => {
+  const response = await request.post("/api/contact", {
+    data: {
+      name: "Spam Bot",
+      email: "bot@spam.example",
+      company: "Botfarm",
+      interestType: "Website refresh",
+      message: "Automated spam message that should never be stored.",
+      website: "https://spam.example"
+    }
+  });
+
+  expect(response.status()).toBe(200);
+  const payload = await response.json();
+  expect(payload).toEqual({ success: true, data: null });
+});

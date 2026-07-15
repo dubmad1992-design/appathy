@@ -16,7 +16,8 @@ export function ContactForm() {
     email: "",
     company: "",
     interestType: interests[0],
-    message: ""
+    message: "",
+    website: ""
   });
 
   function update<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
@@ -46,7 +47,8 @@ export function ContactForm() {
         email: "",
         company: "",
         interestType: interests[0],
-        message: ""
+        message: "",
+        website: ""
       });
     });
   }
@@ -84,6 +86,20 @@ export function ContactForm() {
             </option>
           ))}
         </select>
+      </div>
+
+      {/* Honeypot: invisible to people, bots fill it and get silently dropped. */}
+      <div aria-hidden="true" className="absolute -left-[9999px] top-auto h-px w-px overflow-hidden">
+        <label htmlFor="website">Website</label>
+        <input
+          autoComplete="off"
+          id="website"
+          name="website"
+          onChange={(event) => update("website", event.target.value)}
+          tabIndex={-1}
+          type="text"
+          value={form.website}
+        />
       </div>
 
       <div className="space-y-2">

@@ -12,7 +12,9 @@ export const contactSchema = z.object({
   email: z.string().email("A valid email is required."),
   company: z.string().optional().or(z.literal("")),
   interestType: z.string().min(2, "Select an interest type."),
-  message: z.string().min(10, "Tell Appathy a little more about the project.")
+  message: z.string().min(10, "Tell Appathy a little more about the project."),
+  // Honeypot: hidden from humans, so any value means an automated sender.
+  website: z.string().optional()
 });
 
 export const appSchema = z.object({
