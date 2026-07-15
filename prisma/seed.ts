@@ -15,12 +15,14 @@ async function main() {
   await prisma.siteSettings.deleteMany();
   await prisma.user.deleteMany();
 
-  const passwordHash = await bcrypt.hash("d6aa43881ef7e171f8e7955254c30661", 10);
+  // Seed credentials are for local/e2e databases only — never reuse real ones.
+  const seedPassword = process.env.SEED_ADMIN_PASSWORD ?? "e2e-local-admin-password";
+  const passwordHash = await bcrypt.hash(seedPassword, 10);
 
   await prisma.user.create({
     data: {
       name: "Appathy Admin",
-      email: "dubmad1992@gmail.com",
+      email: "admin@appathy.local",
       passwordHash,
       role: Role.SUPER_ADMIN,
       status: UserStatus.active

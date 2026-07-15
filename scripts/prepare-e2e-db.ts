@@ -1,4 +1,5 @@
 import { execFile } from "node:child_process";
+import { rm } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 
@@ -18,13 +19,14 @@ async function run(cmd: string, args: string[], env: NodeJS.ProcessEnv) {
 }
 
 async function main() {
-  const e2eDbUrl = `file:${path.join(process.cwd(), "prisma", "e2e.db")}`;
+  const e2eDbPath = path.join(process.cwd(), "prisma", "e2e.db");
   const env: NodeJS.ProcessEnv = {
     ...process.env,
-    DATABASE_URL: e2eDbUrl
+    DATABASE_URL: `file:${e2eDbPath}`
   };
 
-  await run("node", ["--import", "tsx", "scripts/init-db.ts"], env);
+  await rm(e2eDbPath, { force: true });
+  await run("npx", ["prisma", "db", "push", "--skip-generate"], env);
   await run("node", ["--import", "tsx", "prisma/seed.ts"], env);
 }
 

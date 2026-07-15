@@ -9,7 +9,7 @@
     "lint": "next lint",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "db:init": "node --import tsx scripts/init-db.ts",
+    "db:init": "prisma db push --skip-generate",
     "db:seed": "node --import tsx prisma/seed.ts",
     "test:e2e:prepare": "node --import tsx scripts/prepare-e2e-db.ts",
     "test:e2e": "playwright test"
