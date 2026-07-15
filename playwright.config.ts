@@ -8,6 +8,9 @@ const e2eDbUrl = `file:${path.join(process.cwd(), "prisma", "e2e.db")}`;
 
 export default defineConfig({
   testDir: "./tests/e2e",
+  // The crm-* specs drive the deployed CRM app and only make sense when
+  // PLAYWRIGHT_BASE_URL points at it; the local webServer serves the main site.
+  testIgnore: useExistingServer ? [] : ["**/crm-*.spec.ts"],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
