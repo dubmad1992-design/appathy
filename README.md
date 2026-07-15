@@ -19,6 +19,33 @@ npm run build
 npm run start
 ```
 
+## Deployment
+
+Both apps run on the production VPS under pm2, fronted by nginx with Let's Encrypt TLS.
+
+### Main site (`appathy.uk`)
+
+- pm2 process: `appathy` (defined in [`ecosystem.config.js`](ecosystem.config.js)), runs `npm start` in `/root/appathy` on `127.0.0.1:3004`.
+- nginx: `/etc/nginx/sites-enabled/appathy` proxies `/` to port 3004. The same server block also routes other apps that are **not** part of this repo: `/mileagetracker` → 3005, `/tinytots/api` → 3009, `/linc/api` → 3003.
+- Environment: `.env` in the repo root (gitignored) provides `DATABASE_URL` and `JWT_SECRET`; Next.js loads it at runtime. Never put secrets in `ecosystem.config.js` — it is committed.
+- Database: SQLite at `prisma/dev.db` (gitignored — **back it up separately**; it is the only copy of production data).
+
+### CRM (`crm.appathy.uk`)
+
+- pm2 process: `appathy-crm`, runs `npm start` in `/root/appathy/crm` on `127.0.0.1:3007`.
+- nginx: `/etc/nginx/sites-enabled/crm-apathy` (template kept at [`crm/deploy/nginx.crm.apathy.uk.conf`](crm/deploy/nginx.crm.apathy.uk.conf)).
+- Environment: `crm/.env` (gitignored) — see [`crm/README.md`](crm/README.md) for the full variable list.
+- Database: PostgreSQL (connection via `DATABASE_URL` in `crm/.env`).
+
+### Deploying a change
+
+```bash
+cd /root/appathy   # or /root/appathy/crm
+npm run build
+pm2 restart appathy   # or appathy-crm
+pm2 save
+```
+
 ## Notes
 
 - This workspace now serves the Appathy site at `https://appathy.uk/`.

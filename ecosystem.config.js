@@ -5,10 +5,10 @@ module.exports = {
       cwd: "/root/appathy",
       script: "npm",
       args: "start -- --hostname 127.0.0.1 --port 3004",
+      // DATABASE_URL and JWT_SECRET come from .env (loaded by Next.js);
+      // never hardcode secrets here — this file is committed.
       env: {
-        NODE_ENV: "production",
-        DATABASE_URL: "file:/root/appathy/prisma/dev.db",
-        JWT_SECRET: "upkdciFGhaoC7MeeYKYOg2BLW4xWyNTjukj3jKlyB7pCuRbLAzJnBZbHeEjvY9v8"
+        NODE_ENV: "production"
       }
     }
   ]
