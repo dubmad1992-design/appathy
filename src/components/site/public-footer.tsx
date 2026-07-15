@@ -46,10 +46,13 @@ export async function PublicFooter() {
           </div>
 
           <div
-            className="mt-8 border-t pt-6 text-xs text-[#b9b0ad]"
+            className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t pt-6 text-xs text-[#b9b0ad]"
             style={{ borderColor: "rgba(244,114,182,0.08)" }}
           >
-            © {new Date().getFullYear()} Appathy. All rights reserved.
+            <span>© {new Date().getFullYear()} Appathy. All rights reserved.</span>
+            <Link className="transition hover:text-[#f472b6]" href="/privacy">
+              Privacy policy
+            </Link>
           </div>
         </div>
       </div>

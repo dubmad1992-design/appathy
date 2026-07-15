@@ -8,7 +8,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   });
 
   const base = "https://appathy.uk";
-  const core = ["", "/apps", "/services", "/contact", "/faq"].map((path) => ({
+  const core = ["", "/apps", "/services", "/contact", "/faq", "/privacy"].map((path) => ({
     url: `${base}${path}`,
     lastModified: new Date()
   }));
