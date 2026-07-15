@@ -28,7 +28,7 @@ export default defineConfig({
   webServer: useExistingServer
     ? undefined
     : {
-        command: `npm run test:e2e:prepare && DATABASE_URL=${e2eDbUrl} npm run dev -- --hostname 127.0.0.1 --port ${defaultPort}`,
+        command: `npm run test:e2e:prepare && DATABASE_URL=${e2eDbUrl} NEXT_DIST_DIR=.next-e2e npm run dev -- --hostname 127.0.0.1 --port ${defaultPort}`,
         url: baseURL,
         reuseExistingServer: !process.env.CI,
         timeout: 120000

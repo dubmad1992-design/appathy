@@ -2,6 +2,9 @@ import path from "node:path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Lets the e2e dev server build somewhere other than .next so it can
+  // never clobber the production build on the server.
+  distDir: process.env.NEXT_DIST_DIR ?? ".next",
   poweredByHeader: false,
   outputFileTracingRoot: path.resolve(__dirname),
   images: {
